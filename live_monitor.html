@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Live Network Monitoring</title>
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}">
+
+
+<style>
+
+body {
+    margin: 0;
+}
+
+
+.monitor-wrapper {
+
+    max-width: 1400px;
+
+    margin: auto;
+
+}
+
+
+.monitor-top {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+    flex-wrap: wrap;
+
+}
+
+
+.live-status {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    font-weight: bold;
+
+}
+
+
+.status-dot {
+
+    width: 13px;
+
+    height: 13px;
+
+    border-radius: 50%;
+
+    background: #777;
+
+}
+
+
+.status-dot.active {
+
+    background: #00d084;
+
+    box-shadow:
+        0 0 10px #00d084;
+
+}
+
+
+.stats-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 20px;
+
+    margin-top: 25px;
+
+}
+
+
+.stat-card {
+
+    padding: 25px;
+
+    border-radius: 16px;
+
+    background:
+        rgba(255,255,255,0.06);
+
+    border:
+        1px solid rgba(255,255,255,0.12);
+
+    text-align: center;
+
+}
+
+
+.stat-card p {
+
+    margin: 0;
+
+    opacity: 0.75;
+
+}
+
+
+.stat-card h2 {
+
+    font-size: 34px;
+
+    margin: 10px 0 0;
+
+}
+
+
+.live-card {
+
+    margin-top: 25px;
+
+    padding: 25px;
+
+    border-radius: 16px;
+
+    background:
+        rgba(255,255,255,0.06);
+
+    border:
+        1px solid rgba(255,255,255,0.12);
+
+}
+
+
+.last-activity {
+
+    margin-top: 15px;
+
+    padding: 18px;
+
+    border-radius: 12px;
+
+    background:
+        rgba(0,0,0,0.15);
+
+}
+
+
+.table-container {
+
+    overflow-x: auto;
+
+}
+
+
+.traffic-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    margin-top: 15px;
+
+}
+
+
+.traffic-table th {
+
+    padding: 14px;
+
+    text-align: left;
+
+    background:
+        rgba(255,255,255,0.08);
+
+    white-space: nowrap;
+
+}
+
+
+.traffic-table td {
+
+    padding: 13px;
+
+    border-bottom:
+        1px solid rgba(255,255,255,0.08);
+
+    white-space: nowrap;
+
+}
+
+
+.normal-text {
+
+    font-weight: bold;
+
+    color: #00d084;
+
+}
+
+
+.attack-text {
+
+    font-weight: bold;
+
+    color: #ff4d4d;
+
+}
+
+
+.warning-text {
+
+    font-weight: bold;
+
+    color: #ffb020;
+
+}
+
+
+.control-buttons {
+
+    display: flex;
+
+    gap: 12px;
+
+    flex-wrap: wrap;
+
+    margin-top: 20px;
+
+}
+
+
+@media(max-width: 900px) {
+
+    .stats-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+    }
+
+}
+
+
+@media(max-width: 550px) {
+
+    .stats-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="dashboard">
+
+
+<!-- =====================================================
+HEADER
+===================================================== -->
+
+<header class="dashboard-header">
+
+    <div>
+
+        <h1>
+            CYBER DEFENCE
+        </h1>
+
+        <p>
+            AI Powered Network Security System
+        </p>
+
+    </div>
+
+
+    <div>
+
+        <span>
+            Welcome,
+            {{ session.get("username") }}
+        </span>
+
+
+        <a href="{{ url_for('logout') }}"
+           class="logout-btn">
+
+            Logout
+
+        </a>
+
+    </div>
+
+</header>
+
+
+<!-- =====================================================
+MAIN
+===================================================== -->
+
+<section class="dashboard-content">
+
+
+<div class="monitor-wrapper">
+
+
+<!-- =====================================================
+TITLE
+===================================================== -->
+
+<div class="welcome-card">
+
+
+<div class="monitor-top">
+
+
+<div>
+
+<h2>
+🔴 Live Security Operations Center
+</h2>
+
+
+<p>
+
+Real-time network traffic monitoring
+and AI-based cyber attack detection.
+
+</p>
+
+</div>
+
+
+<div class="live-status">
+
+<span id="statusDot"
+      class="status-dot">
+
+</span>
+
+
+<span id="monitorStatus">
+
+Checking status...
+
+</span>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<!-- =====================================================
+CONTROL
+===================================================== -->
+
+<div class="live-card">
+
+
+<h3>
+🌐 Network Monitoring Engine
+</h3>
+
+
+<p>
+
+Start the AI monitoring engine to capture
+live network packets and analyze suspicious
+network activity.
+
+</p>
+
+
+<div class="control-buttons">
+
+
+<a href="{{ url_for('start_live_monitor') }}"
+   class="dashboard-btn live-btn">
+
+🔴 Start Live Monitoring
+
+</a>
+
+
+<a href="{{ url_for('home') }}"
+   class="dashboard-btn">
+
+← Back to Dashboard
+
+</a>
+
+
+</div>
+
+
+</div>
+
+
+<!-- =====================================================
+STATISTICS
+===================================================== -->
+
+<div class="stats-grid">
+
+
+<div class="stat-card">
+
+<p>
+Total Packets
+</p>
+
+<h2 id="totalPackets">
+0
+</h2>
+
+</div>
+
+
+<div class="stat-card">
+
+<p>
+Normal Traffic
+</p>
+
+<h2 id="normalPackets">
+0
+</h2>
+
+</div>
+
+
+<div class="stat-card">
+
+<p>
+Attack Traffic
+</p>
+
+<h2 id="attackPackets">
+0
+</h2>
+
+</div>
+
+
+<div class="stat-card">
+
+<p>
+Security Alerts
+</p>
+
+<h2 id="alerts">
+0
+</h2>
+
+</div>
+
+
+</div>
+
+
+<!-- =====================================================
+LATEST ACTIVITY
+===================================================== -->
+
+<div class="live-card">
+
+
+<h3>
+📡 Latest Network Activity
+</h3>
+
+
+<div id="lastPacket"
+     class="last-activity">
+
+Waiting for network activity...
+
+</div>
+
+
+</div>
+
+
+<!-- =====================================================
+LIVE TRAFFIC TABLE
+===================================================== -->
+
+<div class="live-card">
+
+
+<h3>
+🌐 Live Network Traffic
+</h3>
+
+
+<div class="table-container">
+
+
+<table class="traffic-table">
+
+
+<thead>
+
+<tr>
+
+<th>
+Time
+</th>
+
+<th>
+Source
+</th>
+
+<th>
+Destination
+</th>
+
+<th>
+Protocol
+</th>
+
+<th>
+AI Detection
+</th>
+
+<th>
+Confidence
+</th>
+
+<th>
+Status
+</th>
+
+<th>
+Packets
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="trafficBody">
+
+
+<tr>
+
+<td colspan="8"
+    style="text-align:center;">
+
+Waiting for live network traffic...
+
+</td>
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+</div>
+
+
+<!-- =====================================================
+JAVASCRIPT
+===================================================== -->
+
+<script>
+
+
+async function updateDashboard() {
+
+
+    try {
+
+
+        const response = await fetch(
+            "{{ url_for('live_data') }}",
+            {
+                cache: "no-store"
+            }
+        );
+
+
+        if (!response.ok) {
+
+            return;
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        // =========================================
+        // STATISTICS
+        // =========================================
+
+
+        document.getElementById(
+            "totalPackets"
+        ).innerText =
+            data.total_packets || 0;
+
+
+        document.getElementById(
+            "normalPackets"
+        ).innerText =
+            data.normal_packets || 0;
+
+
+        document.getElementById(
+            "attackPackets"
+        ).innerText =
+            data.attack_packets || 0;
+
+
+        document.getElementById(
+            "alerts"
+        ).innerText =
+            data.alerts || 0;
+
+
+        // =========================================
+        // STATUS
+        // =========================================
+
+
+        const dot =
+            document.getElementById(
+                "statusDot"
+            );
+
+
+        const status =
+            document.getElementById(
+                "monitorStatus"
+            );
+
+
+        if (
+            data.monitoring === true
+        ) {
+
+
+            dot.classList.add(
+                "active"
+            );
+
+
+            status.innerText =
+                "LIVE MONITORING ACTIVE";
+
+
+        } else {
+
+
+            dot.classList.remove(
+                "active"
+            );
+
+
+            status.innerText =
+                "MONITOR READY";
+
+
+        }
+
+
+        // =========================================
+        // LAST PACKET
+        // =========================================
+
+
+        const last =
+            data.last_packet;
+
+
+        if (last) {
+
+
+            document.getElementById(
+                "lastPacket"
+            ).innerHTML = `
+
+                <strong>
+                    ${last.time}
+                </strong>
+
+                &nbsp; | &nbsp;
+
+                ${last.source}
+
+                →
+
+                ${last.destination}
+
+                &nbsp; | &nbsp;
+
+                ${last.protocol}
+
+                &nbsp; | &nbsp;
+
+                <strong>
+                    ${last.attack}
+                </strong>
+
+                &nbsp; | &nbsp;
+
+                Confidence:
+                ${last.confidence}%
+
+                &nbsp; | &nbsp;
+
+                ${last.status}
+
+            `;
+
+
+        }
+
+
+        // =========================================
+        // TABLE
+        // =========================================
+
+
+        const body =
+            document.getElementById(
+                "trafficBody"
+            );
+
+
+        const packets =
+            data.recent_packets || [];
+
+
+        body.innerHTML = "";
+
+
+        if (
+            packets.length === 0
+        ) {
+
+
+            body.innerHTML = `
+
+                <tr>
+
+                    <td colspan="8"
+                        style="text-align:center;">
+
+                        Waiting for live network traffic...
+
+                    </td>
+
+                </tr>
+
+            `;
+
+
+            return;
+
+        }
+
+
+        packets.forEach(
+            function(packet)
+            {
+
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                let detectionClass =
+                    "warning-text";
+
+
+                if (
+                    packet.attack ===
+                    "Normal"
+                ) {
+
+                    detectionClass =
+                        "normal-text";
+
+                }
+
+
+                if (
+                    packet.status ===
+                    "SECURITY ALERT"
+                ) {
+
+                    detectionClass =
+                        "attack-text";
+
+                }
+
+
+                row.innerHTML = `
+
+                    <td>
+                        ${packet.time}
+                    </td>
+
+                    <td>
+                        ${packet.source}
+                    </td>
+
+                    <td>
+                        ${packet.destination}
+                    </td>
+
+                    <td>
+                        ${packet.protocol}
+                    </td>
+
+                    <td class="${detectionClass}">
+                        ${packet.attack}
+                    </td>
+
+                    <td>
+                        ${packet.confidence}%
+                    </td>
+
+                    <td class="${detectionClass}">
+                        ${packet.status}
+                    </td>
+
+                    <td>
+                        ${packet.packets}
+                    </td>
+
+                `;
+
+
+                body.appendChild(
+                    row
+                );
+
+
+            }
+        );
+
+
+    }
+
+
+    catch (error) {
+
+
+        console.log(
+            "Dashboard Error:",
+            error
+        );
+
+
+    }
+
+
+}
+
+
+// =====================================================
+// START AUTO REFRESH
+// =====================================================
+
+updateDashboard();
+
+
+setInterval(
+    updateDashboard,
+    1000
+);
+
+
+</script>
+
+
+</body>
+
+</html>

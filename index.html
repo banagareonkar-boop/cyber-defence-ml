@@ -1,0 +1,835 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cyber Defence | Security Operations Center</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top right, #12365c 0%, transparent 35%),
+                radial-gradient(circle at bottom left, #071d32 0%, transparent 35%),
+                #050b14;
+            color: #e8f1fa;
+        }
+
+        .dashboard {
+            min-height: 100vh;
+        }
+
+        /* HEADER */
+
+        .dashboard-header {
+            height: 78px;
+            padding: 0 45px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            background: rgba(7, 16, 28, 0.92);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+
+            box-shadow: 0 4px 25px rgba(0,0,0,0.35);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: linear-gradient(135deg, #1677ff, #00c6ff);
+            font-size: 22px;
+
+            box-shadow: 0 0 20px rgba(0,160,255,0.35);
+        }
+
+        .brand h1 {
+            font-size: 20px;
+            letter-spacing: 1.5px;
+        }
+
+        .brand p {
+            font-size: 11px;
+            color: #7f93a8;
+            margin-top: 3px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .system-online {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            padding: 8px 13px;
+            border-radius: 20px;
+
+            background: rgba(0, 200, 120, 0.08);
+            border: 1px solid rgba(0, 220, 130, 0.25);
+
+            color: #4ee6a1;
+            font-size: 12px;
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #24df8b;
+            box-shadow: 0 0 10px #24df8b;
+        }
+
+        .user {
+            font-size: 13px;
+            color: #aebdcb;
+        }
+
+        .logout-btn {
+            text-decoration: none;
+            color: #ff8790;
+
+            padding: 8px 14px;
+            border-radius: 8px;
+
+            border: 1px solid rgba(255,100,110,0.25);
+            background: rgba(255,80,90,0.06);
+
+            font-size: 12px;
+            transition: 0.25s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,80,90,0.15);
+        }
+
+        /* MAIN */
+
+        .main {
+            max-width: 1250px;
+            margin: auto;
+            padding: 38px 35px 50px;
+        }
+
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 28px;
+        }
+
+        .top-section h2 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .top-section p {
+            color: #8295a9;
+            margin-top: 7px;
+            font-size: 13px;
+        }
+
+        .time {
+            color: #60778e;
+            font-size: 12px;
+        }
+
+        /* STAT CARDS */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 17px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border-radius: 13px;
+
+            background: linear-gradient(
+                145deg,
+                rgba(19,35,54,0.9),
+                rgba(9,20,33,0.9)
+            );
+
+            border: 1px solid rgba(255,255,255,0.07);
+
+            transition: 0.25s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(0,160,255,0.3);
+        }
+
+        .stat-title {
+            font-size: 11px;
+            color: #7e92a7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 25px;
+            margin-top: 9px;
+            font-weight: 600;
+        }
+
+        .stat-status {
+            font-size: 11px;
+            color: #42df98;
+            margin-top: 6px;
+        }
+
+        /* MAIN ACTIONS */
+
+        .section-title {
+            font-size: 13px;
+            color: #9eb0c1;
+            margin: 30px 0 13px;
+
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .action-card {
+            position: relative;
+            overflow: hidden;
+
+            min-height: 190px;
+            padding: 25px;
+
+            border-radius: 15px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(17,35,55,0.96),
+                    rgba(8,17,29,0.96)
+                );
+
+            border: 1px solid rgba(255,255,255,0.08);
+
+            transition: 0.3s;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0,170,255,0.4);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.35);
+        }
+
+        .action-card.live {
+            border-color: rgba(255,70,80,0.18);
+        }
+
+        .action-card.live:hover {
+            border-color: rgba(255,70,80,0.45);
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 12px;
+
+            background: rgba(0,150,255,0.10);
+            border: 1px solid rgba(0,150,255,0.18);
+
+            font-size: 21px;
+
+            margin-bottom: 18px;
+        }
+
+        .live .card-icon {
+            background: rgba(255,60,70,0.09);
+            border-color: rgba(255,70,80,0.2);
+        }
+
+        .action-card h3 {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .action-card p {
+            color: #8296aa;
+            font-size: 12px;
+            line-height: 1.6;
+
+            margin-top: 8px;
+            margin-bottom: 18px;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            padding: 9px 15px;
+
+            border-radius: 8px;
+
+            text-decoration: none;
+
+            background: rgba(0,130,255,0.12);
+            border: 1px solid rgba(0,150,255,0.25);
+
+            color: #63c7ff;
+            font-size: 12px;
+
+            transition: 0.25s;
+        }
+
+        .action-btn:hover {
+            background: rgba(0,150,255,0.22);
+        }
+
+        .live .action-btn {
+            background: rgba(255,60,70,0.09);
+            border-color: rgba(255,70,80,0.25);
+            color: #ff8c93;
+        }
+
+        /* BOTTOM PANEL */
+
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        .panel {
+            padding: 22px;
+
+            border-radius: 14px;
+
+            background: rgba(10,23,38,0.88);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .panel-header h3 {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .panel-header span {
+            color: #647c91;
+            font-size: 11px;
+        }
+
+        .category-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .category {
+            padding: 8px 13px;
+            border-radius: 7px;
+
+            background: rgba(255,255,255,0.035);
+            border: 1px solid rgba(255,255,255,0.07);
+
+            color: #9eb1c3;
+            font-size: 11px;
+        }
+
+        .category.normal {
+            color: #4fe3a0;
+            border-color: rgba(70,220,150,0.2);
+        }
+
+        .category.danger {
+            color: #ff777f;
+            border-color: rgba(255,70,80,0.2);
+        }
+
+        .security-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 10px 0;
+
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+
+            font-size: 12px;
+            color: #8397aa;
+        }
+
+        .security-row:last-child {
+            border-bottom: none;
+        }
+
+        .active {
+            color: #48dfa0;
+        }
+
+        /* FOOTER */
+
+        footer {
+            text-align: center;
+            margin-top: 42px;
+
+            color: #4e6479;
+            font-size: 11px;
+        }
+
+        /* RESPONSIVE */
+
+        @media(max-width: 900px) {
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-header {
+                padding: 0 20px;
+            }
+
+            .system-online {
+                display: none;
+            }
+        }
+
+        @media(max-width: 600px) {
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .main {
+                padding: 25px 18px;
+            }
+
+            .user {
+                display: none;
+            }
+
+            .top-section h2 {
+                font-size: 23px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="dashboard">
+
+    <!-- HEADER -->
+
+    <header class="dashboard-header">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                🛡️
+            </div>
+
+            <div>
+                <h1>CYBER DEFENCE</h1>
+                <p>AI-POWERED NETWORK SECURITY</p>
+            </div>
+
+        </div>
+
+
+        <div class="header-right">
+
+            <div class="system-online">
+                <span class="online-dot"></span>
+                SYSTEM ONLINE
+            </div>
+
+            <span class="user">
+                {{ session.get("username") }}
+            </span>
+
+            <a href="{{ url_for('logout') }}"
+               class="logout-btn">
+                Logout
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+
+        <!-- TITLE -->
+
+        <div class="top-section">
+
+            <div>
+
+                <h2>Security Operations Center</h2>
+
+                <p>
+                    Real-time network security monitoring and
+                    AI-based threat detection.
+                </p>
+
+            </div>
+
+            <div class="time">
+                SOC DASHBOARD
+            </div>
+
+        </div>
+
+
+        <!-- SYSTEM STATS -->
+
+        <div class="stats">
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    Authentication
+                </div>
+
+                <div class="stat-value">
+                    Active
+                </div>
+
+                <div class="stat-status">
+                    ● Secure session
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    AI Engine
+                </div>
+
+                <div class="stat-value">
+                    Ready
+                </div>
+
+                <div class="stat-status">
+                    ● ML model loaded
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    Network Monitor
+                </div>
+
+                <div class="stat-value">
+                    Ready
+                </div>
+
+                <div class="stat-status">
+                    ● Monitoring available
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-title">
+                    Detection
+                </div>
+
+                <div class="stat-value">
+                    5 Classes
+                </div>
+
+                <div class="stat-status">
+                    ● Normal + threats
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- OPERATIONS -->
+
+        <div class="section-title">
+            Security Operations
+        </div>
+
+
+        <div class="action-grid">
+
+
+            <!-- DATASET -->
+
+            <div class="action-card">
+
+                <div class="card-icon">
+                    📁
+                </div>
+
+                <h3>
+                    Dataset Analysis
+                </h3>
+
+                <p>
+                    Analyze network traffic datasets and
+                    classify suspicious activity using the
+                    trained AI model.
+                </p>
+
+                <a href="{{ url_for('prediction') }}"
+                   class="action-btn">
+
+                    Analyze Dataset →
+
+                </a>
+
+            </div>
+
+
+            <!-- LIVE MONITOR -->
+
+            <div class="action-card live">
+
+                <div class="card-icon">
+                    🔴
+                </div>
+
+                <h3>
+                    Live Network Monitor
+                </h3>
+
+                <p>
+                    Capture live network packets and detect
+                    suspicious traffic in real time.
+                </p>
+
+                <a href="{{ url_for('live_monitor') }}"
+                   class="action-btn">
+
+                    Open Live Monitor →
+
+                </a>
+
+            </div>
+
+
+            <!-- ANALYSIS -->
+
+            <div class="action-card">
+
+                <div class="card-icon">
+                    📊
+                </div>
+
+                <h3>
+                    Security Analysis
+                </h3>
+
+                <p>
+                    Review detected attacks, traffic
+                    categories and recommended responses.
+                </p>
+
+                <a href="{{ url_for('prediction') }}"
+                   class="action-btn">
+
+                    View Analysis →
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- LOWER PANELS -->
+
+        <div class="bottom-grid">
+
+
+            <!-- DETECTION CATEGORIES -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <h3>
+                        Detection Categories
+                    </h3>
+
+                    <span>
+                        AI CLASSIFIER
+                    </span>
+
+                </div>
+
+
+                <div class="category-list">
+
+                    <div class="category normal">
+                        Normal
+                    </div>
+
+                    <div class="category danger">
+                        DoS
+                    </div>
+
+                    <div class="category">
+                        Probe
+                    </div>
+
+                    <div class="category">
+                        R2L
+                    </div>
+
+                    <div class="category">
+                        U2R
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SYSTEM STATUS -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <h3>
+                        System Status
+                    </h3>
+
+                    <span>
+                        LIVE
+                    </span>
+
+                </div>
+
+
+                <div class="security-row">
+
+                    <span>
+                        Authentication
+                    </span>
+
+                    <span class="active">
+                        ● Active
+                    </span>
+
+                </div>
+
+
+                <div class="security-row">
+
+                    <span>
+                        ML Model
+                    </span>
+
+                    <span class="active">
+                        ● Loaded
+                    </span>
+
+                </div>
+
+
+                <div class="security-row">
+
+                    <span>
+                        Network Monitor
+                    </span>
+
+                    <span class="active">
+                        ● Ready
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <footer>
+
+            Cyber Defence with Machine Learning © 2026
+
+        </footer>
+
+
+    </main>
+
+</div>
+
+</body>
+
+</html>
+```

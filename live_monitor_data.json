@@ -1,0 +1,320 @@
+{
+    "status": "LIVE",
+    "monitoring": true,
+    "total_packets": 3418,
+    "normal_packets": 1635,
+    "attack_packets": 42,
+    "alerts": 42,
+    "last_packet": {
+        "time": "13:00:28",
+        "source": "10.213.77.237:59761",
+        "destination": "150.171.109.130:443",
+        "protocol": "TCP",
+        "attack": "Probe",
+        "confidence": 100.0,
+        "status": "Not Confirmed",
+        "packets": 4
+    },
+    "recent_packets": [
+        {
+            "time": "13:00:28",
+            "source": "10.213.77.237:59761",
+            "destination": "150.171.109.130:443",
+            "protocol": "TCP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "Not Confirmed",
+            "packets": 4
+        },
+        {
+            "time": "13:00:28",
+            "source": "10.213.77.237:54650",
+            "destination": "10.213.77.251:53",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "Not Confirmed",
+            "packets": 3
+        },
+        {
+            "time": "13:00:28",
+            "source": "10.213.77.237:60607",
+            "destination": "10.213.77.251:53",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "Not Confirmed",
+            "packets": 3
+        },
+        {
+            "time": "13:00:24",
+            "source": "10.213.77.237:59761",
+            "destination": "150.171.109.130:443",
+            "protocol": "TCP",
+            "attack": "DoS",
+            "confidence": 100.0,
+            "status": "Not Confirmed",
+            "packets": 3
+        },
+        {
+            "time": "12:59:08",
+            "source": "10.213.77.251:5353",
+            "destination": "224.0.0.251:5353",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 28
+        },
+        {
+            "time": "12:58:48",
+            "source": "10.213.77.251:5353",
+            "destination": "224.0.0.251:5353",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 27
+        },
+        {
+            "time": "12:58:28",
+            "source": "10.213.77.251:5353",
+            "destination": "224.0.0.251:5353",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 26
+        },
+        {
+            "time": "12:58:15",
+            "source": "10.213.77.237:64049",
+            "destination": "74.162.106.40:443",
+            "protocol": "TCP",
+            "attack": "Normal",
+            "confidence": 100.0,
+            "status": "Normal Traffic",
+            "packets": 20
+        },
+        {
+            "time": "12:58:08",
+            "source": "10.213.77.251:5353",
+            "destination": "224.0.0.251:5353",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 25
+        },
+        {
+            "time": "12:57:57",
+            "source": "10.213.77.237:64049",
+            "destination": "74.162.106.40:443",
+            "protocol": "TCP",
+            "attack": "Normal",
+            "confidence": 100.0,
+            "status": "Normal Traffic",
+            "packets": 19
+        },
+        {
+            "time": "12:57:48",
+            "source": "10.213.77.251:5353",
+            "destination": "224.0.0.251:5353",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 24
+        },
+        {
+            "time": "12:57:28",
+            "source": "10.213.77.251:5353",
+            "destination": "224.0.0.251:5353",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 23
+        },
+        {
+            "time": "12:57:15",
+            "source": "10.213.77.237:64049",
+            "destination": "74.162.106.40:443",
+            "protocol": "TCP",
+            "attack": "Normal",
+            "confidence": 100.0,
+            "status": "Normal Traffic",
+            "packets": 18
+        },
+        {
+            "time": "12:57:12",
+            "source": "10.213.77.237:64049",
+            "destination": "74.162.106.40:443",
+            "protocol": "TCP",
+            "attack": "Normal",
+            "confidence": 100.0,
+            "status": "Normal Traffic",
+            "packets": 17
+        },
+        {
+            "time": "12:57:08",
+            "source": "10.213.77.251:5353",
+            "destination": "224.0.0.251:5353",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 22
+        },
+        {
+            "time": "12:57:01",
+            "source": "52.113.196.254:443",
+            "destination": "10.213.77.237:55552",
+            "protocol": "TCP",
+            "attack": "Normal",
+            "confidence": 100.0,
+            "status": "Normal Traffic",
+            "packets": 16
+        },
+        {
+            "time": "12:56:56",
+            "source": "10.213.77.237:137",
+            "destination": "10.213.77.255:137",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 51
+        },
+        {
+            "time": "12:56:56",
+            "source": "10.213.77.237:137",
+            "destination": "10.213.77.255:137",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 50
+        },
+        {
+            "time": "12:56:55",
+            "source": "10.213.77.237:137",
+            "destination": "10.213.77.255:137",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 49
+        },
+        {
+            "time": "12:56:48",
+            "source": "10.213.77.251:5353",
+            "destination": "224.0.0.251:5353",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 21
+        },
+        {
+            "time": "12:56:28",
+            "source": "10.213.77.251:5353",
+            "destination": "224.0.0.251:5353",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 20
+        },
+        {
+            "time": "12:56:27",
+            "source": "10.213.77.237:64049",
+            "destination": "74.162.106.40:443",
+            "protocol": "TCP",
+            "attack": "Normal",
+            "confidence": 100.0,
+            "status": "Normal Traffic",
+            "packets": 16
+        },
+        {
+            "time": "12:56:27",
+            "source": "10.213.77.237:137",
+            "destination": "10.213.77.255:137",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 48
+        },
+        {
+            "time": "12:56:26",
+            "source": "10.213.77.237:137",
+            "destination": "10.213.77.255:137",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 47
+        },
+        {
+            "time": "12:56:26",
+            "source": "10.213.77.237:137",
+            "destination": "10.213.77.255:137",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 46
+        },
+        {
+            "time": "12:56:19",
+            "source": "10.213.77.237:137",
+            "destination": "10.213.77.255:137",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 45
+        },
+        {
+            "time": "12:56:18",
+            "source": "10.213.77.237:137",
+            "destination": "10.213.77.255:137",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 44
+        },
+        {
+            "time": "12:56:17",
+            "source": "10.213.77.237:137",
+            "destination": "10.213.77.255:137",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "SECURITY ALERT",
+            "packets": 43
+        },
+        {
+            "time": "12:56:15",
+            "source": "10.213.77.237:64049",
+            "destination": "74.162.106.40:443",
+            "protocol": "TCP",
+            "attack": "Normal",
+            "confidence": 100.0,
+            "status": "Normal Traffic",
+            "packets": 15
+        },
+        {
+            "time": "12:56:08",
+            "source": "10.213.77.251:5353",
+            "destination": "224.0.0.251:5353",
+            "protocol": "UDP",
+            "attack": "Probe",
+            "confidence": 100.0,
+            "status": "Not Confirmed",
+            "packets": 19
+        }
+    ]
+}

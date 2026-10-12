@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Account</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Create Account</h1>
+
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('register') }}">
+
+        <label>Username</label>
+        <input
+            type="text"
+            name="username"
+            placeholder="Enter username"
+            required
+        >
+
+        <br><br>
+
+        <label>Password</label>
+        <input
+            type="password"
+            name="password"
+            placeholder="Enter password"
+            required
+        >
+
+        <br><br>
+
+        <button type="submit">
+            Create Account
+        </button>
+
+    </form>
+
+    <br>
+
+    <a href="{{ url_for('login') }}">
+        Already have an account? Login
+    </a>
+
+</div>
+
+</body>
+</html>
