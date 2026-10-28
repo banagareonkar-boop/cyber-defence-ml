@@ -1,0 +1,1403 @@
+from scapy.all import sniff, IP, TCP, UDP, conf
+
+from datetime import datetime
+
+from collections import defaultdict
+
+import pandas as pd
+
+import joblib
+
+import time
+
+import json
+
+import os
+
+
+# =========================================================
+# BASE PATH
+# =========================================================
+
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)
+
+
+# =========================================================
+# CONFIGURATION
+# =========================================================
+
+MODEL_PATH = os.path.join(
+    BASE_DIR,
+    "model",
+    "cyber_model.pkl"
+)
+
+ENCODER_PATH = os.path.join(
+    BASE_DIR,
+    "model",
+    "attack_encoder.pkl"
+)
+
+LIVE_DATA_FILE = os.path.join(
+    BASE_DIR,
+    "live_monitor_data.json"
+)
+
+
+INTERFACE_INDEX = 9
+
+MIN_PACKETS_FOR_PREDICTION = 3
+
+ALERT_CONFIDENCE = 0.90
+
+
+# =========================================================
+# LOAD MODEL
+# =========================================================
+
+print()
+
+print("=" * 70)
+
+print("LOADING AI CYBER DEFENCE MODEL")
+
+print("=" * 70)
+
+
+model = joblib.load(
+    MODEL_PATH
+)
+
+attack_encoder = joblib.load(
+    ENCODER_PATH
+)
+
+
+print(
+    "Model Loaded Successfully"
+)
+
+print(
+    "Model:",
+    type(model)
+)
+
+print(
+    "Classes:",
+    list(
+        attack_encoder.classes_
+    )
+)
+
+
+# =========================================================
+# 41 KDD FEATURES
+# =========================================================
+
+FEATURES = [
+
+    "duration",
+    "protocol_type",
+    "service",
+    "flag",
+    "src_bytes",
+    "dst_bytes",
+    "land",
+    "wrong_fragment",
+    "urgent",
+    "hot",
+    "num_failed_logins",
+    "logged_in",
+    "num_compromised",
+    "root_shell",
+    "su_attempted",
+    "num_root",
+    "num_file_creations",
+    "num_shells",
+    "num_access_files",
+    "num_outbound_cmds",
+    "is_host_login",
+    "is_guest_login",
+    "count",
+    "srv_count",
+    "serror_rate",
+    "srv_serror_rate",
+    "rerror_rate",
+    "srv_rerror_rate",
+    "same_srv_rate",
+    "diff_srv_rate",
+    "srv_diff_host_rate",
+    "dst_host_count",
+    "dst_host_srv_count",
+    "dst_host_same_srv_rate",
+    "dst_host_diff_srv_rate",
+    "dst_host_same_src_port_rate",
+    "dst_host_srv_diff_host_rate",
+    "dst_host_serror_rate",
+    "dst_host_srv_serror_rate",
+    "dst_host_rerror_rate",
+    "dst_host_srv_rerror_rate"
+]
+
+
+# =========================================================
+# LIVE DATA
+# =========================================================
+
+live_data = {
+
+    "status":
+    "starting",
+
+    "monitoring":
+    True,
+
+    "total_packets":
+    0,
+
+    "normal_packets":
+    0,
+
+    "attack_packets":
+    0,
+
+    "alerts":
+    0,
+
+    "last_packet":
+    None,
+
+    "recent_packets":
+    []
+
+}
+
+
+# =========================================================
+# SAVE LIVE DATA
+# =========================================================
+
+def save_live_data():
+
+    try:
+
+        temp_file = (
+            LIVE_DATA_FILE
+            +
+            ".tmp"
+        )
+
+        with open(
+            temp_file,
+            "w",
+            encoding="utf-8"
+        ) as f:
+
+            json.dump(
+                live_data,
+                f,
+                indent=4
+            )
+
+        os.replace(
+            temp_file,
+            LIVE_DATA_FILE
+        )
+
+    except Exception as e:
+
+        print(
+            "Live data save error:",
+            e
+        )
+
+
+# =========================================================
+# INITIAL SAVE
+# =========================================================
+
+save_live_data()
+
+
+# =========================================================
+# FLOW STORAGE
+# =========================================================
+
+flows = {}
+
+
+# =========================================================
+# SOURCE ACTIVITY
+# =========================================================
+
+source_activity = defaultdict(
+    list
+)
+
+
+# =========================================================
+# PROTOCOL
+# =========================================================
+
+def get_protocol(packet):
+
+    if TCP in packet:
+
+        return "tcp"
+
+    if UDP in packet:
+
+        return "udp"
+
+    return "other"
+
+
+# =========================================================
+# SERVICE
+# =========================================================
+
+def get_service(packet):
+
+    if TCP in packet:
+
+        port = packet[
+            TCP
+        ].dport
+
+    elif UDP in packet:
+
+        port = packet[
+            UDP
+        ].dport
+
+    else:
+
+        return "other"
+
+
+    services = {
+
+        20: "ftp_data",
+
+        21: "ftp",
+
+        22: "ssh",
+
+        23: "telnet",
+
+        25: "smtp",
+
+        53: "domain_u",
+
+        80: "http",
+
+        110: "pop_3",
+
+        111: "sunrpc",
+
+        135: "msrpc",
+
+        139: "netbios_ssn",
+
+        143: "imap4",
+
+        443: "https",
+
+        445: "microsoft_ds",
+
+        993: "imap4",
+
+        995: "pop_3"
+
+    }
+
+    return services.get(
+        port,
+        "other"
+    )
+
+
+# =========================================================
+# TCP FLAG
+# =========================================================
+
+def get_flag(packet):
+
+    if TCP not in packet:
+
+        return "OTH"
+
+
+    flags = str(
+        packet[TCP].flags
+    )
+
+
+    if (
+        "S" in flags
+        and
+        "A" not in flags
+    ):
+
+        return "S0"
+
+
+    if (
+        "S" in flags
+        and
+        "A" in flags
+    ):
+
+        return "S1"
+
+
+    if "F" in flags:
+
+        return "SF"
+
+
+    if "R" in flags:
+
+        return "REJ"
+
+
+    if "P" in flags:
+
+        return "S1"
+
+
+    return "OTH"
+
+
+# =========================================================
+# FLOW KEY
+# =========================================================
+
+def get_flow_key(packet):
+
+    ip = packet[
+        IP
+    ]
+
+    protocol = get_protocol(
+        packet
+    )
+
+
+    if TCP in packet:
+
+        src_port = packet[
+            TCP
+        ].sport
+
+        dst_port = packet[
+            TCP
+        ].dport
+
+    elif UDP in packet:
+
+        src_port = packet[
+            UDP
+        ].sport
+
+        dst_port = packet[
+            UDP
+        ].dport
+
+    else:
+
+        src_port = 0
+
+        dst_port = 0
+
+
+    return (
+
+        ip.src,
+
+        ip.dst,
+
+        src_port,
+
+        dst_port,
+
+        protocol
+
+    )
+
+
+# =========================================================
+# CREATE FLOW
+# =========================================================
+
+def create_flow(packet):
+
+    ip = packet[
+        IP
+    ]
+
+    now = time.time()
+
+
+    return {
+
+        "start_time":
+        now,
+
+        "last_time":
+        now,
+
+        "src_ip":
+        ip.src,
+
+        "dst_ip":
+        ip.dst,
+
+        "protocol_type":
+        get_protocol(packet),
+
+        "service":
+        get_service(packet),
+
+        "flag":
+        get_flag(packet),
+
+        "src_bytes":
+        0,
+
+        "dst_bytes":
+        0,
+
+        "packet_count":
+        0,
+
+        "dst_packet_count":
+        0,
+
+        "tcp_syn":
+        0,
+
+        "tcp_rst":
+        0,
+
+        "tcp_fin":
+        0
+
+    }
+
+
+# =========================================================
+# UPDATE FLOW
+# =========================================================
+
+def update_flow(packet):
+
+    key = get_flow_key(
+        packet
+    )
+
+
+    if key not in flows:
+
+        flows[key] = create_flow(
+            packet
+        )
+
+
+    flow = flows[
+        key
+    ]
+
+
+    packet_size = len(
+        packet
+    )
+
+
+    flow["last_time"] = (
+        time.time()
+    )
+
+
+    flow["packet_count"] += 1
+
+
+    flow["src_bytes"] += (
+        packet_size
+    )
+
+
+    if TCP in packet:
+
+        flags = str(
+            packet[TCP].flags
+        )
+
+
+        if "S" in flags:
+
+            flow["tcp_syn"] += 1
+
+
+        if "R" in flags:
+
+            flow["tcp_rst"] += 1
+
+
+        if "F" in flags:
+
+            flow["tcp_fin"] += 1
+
+
+    return flow
+
+
+# =========================================================
+# BUILD FEATURES
+# =========================================================
+
+def build_features(flow):
+
+    duration = (
+        flow["last_time"]
+        -
+        flow["start_time"]
+    )
+
+
+    if duration <= 0:
+
+        duration = 0.001
+
+
+    packet_count = (
+        flow["packet_count"]
+    )
+
+
+    syn_rate = (
+
+        flow["tcp_syn"]
+        /
+        packet_count
+
+        if packet_count > 0
+
+        else 0
+
+    )
+
+
+    rst_rate = (
+
+        flow["tcp_rst"]
+        /
+        packet_count
+
+        if packet_count > 0
+
+        else 0
+
+    )
+
+
+    features = {
+
+        "duration":
+        duration,
+
+        "protocol_type":
+        flow["protocol_type"],
+
+        "service":
+        flow["service"],
+
+        "flag":
+        flow["flag"],
+
+        "src_bytes":
+        flow["src_bytes"],
+
+        "dst_bytes":
+        flow["dst_bytes"],
+
+        "land":
+        0,
+
+        "wrong_fragment":
+        0,
+
+        "urgent":
+        0,
+
+        "hot":
+        0,
+
+        "num_failed_logins":
+        0,
+
+        "logged_in":
+        0,
+
+        "num_compromised":
+        0,
+
+        "root_shell":
+        0,
+
+        "su_attempted":
+        0,
+
+        "num_root":
+        0,
+
+        "num_file_creations":
+        0,
+
+        "num_shells":
+        0,
+
+        "num_access_files":
+        0,
+
+        "num_outbound_cmds":
+        0,
+
+        "is_host_login":
+        0,
+
+        "is_guest_login":
+        0,
+
+        "count":
+        packet_count,
+
+        "srv_count":
+        packet_count,
+
+        "serror_rate":
+        syn_rate,
+
+        "srv_serror_rate":
+        syn_rate,
+
+        "rerror_rate":
+        rst_rate,
+
+        "srv_rerror_rate":
+        rst_rate,
+
+        "same_srv_rate":
+        1.0,
+
+        "diff_srv_rate":
+        0.0,
+
+        "srv_diff_host_rate":
+        0.0,
+
+        "dst_host_count":
+        packet_count,
+
+        "dst_host_srv_count":
+        packet_count,
+
+        "dst_host_same_srv_rate":
+        1.0,
+
+        "dst_host_diff_srv_rate":
+        0.0,
+
+        "dst_host_same_src_port_rate":
+        1.0,
+
+        "dst_host_srv_diff_host_rate":
+        0.0,
+
+        "dst_host_serror_rate":
+        syn_rate,
+
+        "dst_host_srv_serror_rate":
+        syn_rate,
+
+        "dst_host_rerror_rate":
+        rst_rate,
+
+        "dst_host_srv_rerror_rate":
+        rst_rate
+
+    }
+
+
+    return pd.DataFrame(
+
+        [
+            [
+                features[col]
+                for col in FEATURES
+            ]
+        ],
+
+        columns=FEATURES
+
+    )
+
+
+# =========================================================
+# AI PREDICTION
+# =========================================================
+
+def predict_attack(flow):
+
+    feature_df = build_features(
+        flow
+    )
+
+
+    probabilities = (
+        model.predict_proba(
+            feature_df
+        )[0]
+    )
+
+
+    prediction_index = (
+        probabilities.argmax()
+    )
+
+
+    category = (
+        attack_encoder
+        .inverse_transform(
+            [prediction_index]
+        )[0]
+    )
+
+
+    confidence = (
+        probabilities[
+            prediction_index
+        ]
+    )
+
+
+    return (
+        category,
+        confidence
+    )
+
+
+# =========================================================
+# SUSPICIOUS ACTIVITY
+# =========================================================
+
+def suspicious_activity(flow):
+
+    protocol = (
+        flow["protocol_type"]
+    )
+
+    packets = (
+        flow["packet_count"]
+    )
+
+    syn_count = (
+        flow["tcp_syn"]
+    )
+
+    rst_count = (
+        flow["tcp_rst"]
+    )
+
+
+    if (
+
+        protocol == "tcp"
+
+        and
+
+        syn_count >= 5
+
+        and
+
+        packets >= 5
+
+    ):
+
+        return True
+
+
+    if packets >= 20:
+
+        return True
+
+
+    if (
+
+        protocol == "tcp"
+
+        and
+
+        rst_count >= 5
+
+    ):
+
+        return True
+
+
+    return False
+
+
+# =========================================================
+# ADD TO LIVE TABLE
+# =========================================================
+
+def add_live_packet(packet_info):
+
+    live_data[
+        "last_packet"
+    ] = packet_info
+
+
+    live_data[
+        "recent_packets"
+    ].insert(
+
+        0,
+
+        packet_info
+
+    )
+
+
+    live_data[
+        "recent_packets"
+    ] = (
+
+        live_data[
+            "recent_packets"
+        ][:30]
+
+    )
+
+
+    save_live_data()
+
+
+# =========================================================
+# PACKET CALLBACK
+# =========================================================
+
+def packet_callback(packet):
+
+    if IP not in packet:
+
+        return
+
+
+    flow = update_flow(
+        packet
+    )
+
+
+    live_data[
+        "total_packets"
+    ] += 1
+
+
+    if (
+        flow["packet_count"]
+        <
+        MIN_PACKETS_FOR_PREDICTION
+    ):
+
+        save_live_data()
+
+        return
+
+
+    ip = packet[
+        IP
+    ]
+
+
+    protocol = get_protocol(
+        packet
+    )
+
+
+    if TCP in packet:
+
+        src_port = packet[
+            TCP
+        ].sport
+
+        dst_port = packet[
+            TCP
+        ].dport
+
+    elif UDP in packet:
+
+        src_port = packet[
+            UDP
+        ].sport
+
+        dst_port = packet[
+            UDP
+        ].dport
+
+    else:
+
+        src_port = 0
+
+        dst_port = 0
+
+
+    timestamp = datetime.now().strftime(
+        "%H:%M:%S"
+    )
+
+
+    try:
+
+        category, confidence = (
+            predict_attack(
+                flow
+            )
+        )
+
+    except Exception as e:
+
+        print(
+            "Prediction Error:",
+            e
+        )
+
+        return
+
+
+    # =====================================================
+    # NORMAL
+    # =====================================================
+
+    if category == "Normal":
+
+        live_data[
+            "normal_packets"
+        ] += 1
+
+
+        packet_info = {
+
+            "time":
+            timestamp,
+
+            "source":
+            f"{ip.src}:{src_port}",
+
+            "destination":
+            f"{ip.dst}:{dst_port}",
+
+            "protocol":
+            protocol.upper(),
+
+            "attack":
+            "Normal",
+
+            "confidence":
+            round(
+                confidence * 100,
+                2
+            ),
+
+            "status":
+            "Normal Traffic",
+
+            "packets":
+            flow["packet_count"]
+
+        }
+
+
+        add_live_packet(
+            packet_info
+        )
+
+
+        print(
+
+            f"[{timestamp}] "
+
+            f"[NORMAL] "
+
+            f"{ip.src}:{src_port} -> "
+
+            f"{ip.dst}:{dst_port} | "
+
+            f"{protocol.upper()} | "
+
+            f"Confidence="
+
+            f"{confidence * 100:.2f}%"
+
+        )
+
+
+        return
+
+
+    # =====================================================
+    # ATTACK
+    # =====================================================
+
+    suspicious = suspicious_activity(
+        flow
+    )
+
+
+    if (
+
+        category != "Normal"
+
+        and
+
+        confidence >= ALERT_CONFIDENCE
+
+        and
+
+        suspicious
+
+    ):
+
+        live_data[
+            "attack_packets"
+        ] += 1
+
+
+        live_data[
+            "alerts"
+        ] += 1
+
+
+        packet_info = {
+
+            "time":
+            timestamp,
+
+            "source":
+            f"{ip.src}:{src_port}",
+
+            "destination":
+            f"{ip.dst}:{dst_port}",
+
+            "protocol":
+            protocol.upper(),
+
+            "attack":
+            category,
+
+            "confidence":
+            round(
+                confidence * 100,
+                2
+            ),
+
+            "status":
+            "SECURITY ALERT",
+
+            "packets":
+            flow["packet_count"]
+
+        }
+
+
+        add_live_packet(
+            packet_info
+        )
+
+
+        print()
+
+        print("=" * 75)
+
+        print(
+            "[!!! SECURITY ALERT !!!]"
+        )
+
+        print("=" * 75)
+
+        print(
+            f"Time        : {timestamp}"
+        )
+
+        print(
+            f"Source      : "
+            f"{ip.src}:{src_port}"
+        )
+
+        print(
+            f"Destination : "
+            f"{ip.dst}:{dst_port}"
+        )
+
+        print(
+            f"Protocol    : "
+            f"{protocol.upper()}"
+        )
+
+        print(
+            f"Attack Type : "
+            f"{category}"
+        )
+
+        print(
+            f"Confidence  : "
+            f"{confidence * 100:.2f}%"
+        )
+
+        print(
+            f"Packets     : "
+            f"{flow['packet_count']}"
+        )
+
+        print("=" * 75)
+
+        print()
+
+
+    else:
+
+        packet_info = {
+
+            "time":
+            timestamp,
+
+            "source":
+            f"{ip.src}:{src_port}",
+
+            "destination":
+            f"{ip.dst}:{dst_port}",
+
+            "protocol":
+            protocol.upper(),
+
+            "attack":
+            category,
+
+            "confidence":
+            round(
+                confidence * 100,
+                2
+            ),
+
+            "status":
+            "Not Confirmed",
+
+            "packets":
+            flow["packet_count"]
+
+        }
+
+
+        add_live_packet(
+            packet_info
+        )
+
+
+        print(
+
+            f"[{timestamp}] "
+
+            f"[MONITOR] "
+
+            f"{ip.src}:{src_port} -> "
+
+            f"{ip.dst}:{dst_port} | "
+
+            f"{protocol.upper()} | "
+
+            f"AI={category} | "
+
+            f"Confidence="
+
+            f"{confidence * 100:.2f}% | "
+
+            f"Status=Not confirmed"
+
+        )
+
+
+# =========================================================
+# WIFI INTERFACE
+# =========================================================
+
+try:
+
+    wifi_interface = (
+        conf.ifaces.dev_from_index(
+            INTERFACE_INDEX
+        )
+    )
+
+except Exception as e:
+
+    print()
+
+    print(
+        "INTERFACE ERROR:",
+        e
+    )
+
+    print(
+        "Please check INTERFACE_INDEX."
+    )
+
+    live_data[
+        "monitoring"
+    ] = False
+
+    live_data[
+        "status"
+    ] = "Interface Error"
+
+    save_live_data()
+
+    raise
+
+
+# =========================================================
+# START
+# =========================================================
+
+live_data[
+    "monitoring"
+] = True
+
+live_data[
+    "status"
+] = "LIVE"
+
+save_live_data()
+
+
+print()
+
+print("=" * 70)
+
+print(
+    "CYBER DEFENCE - AI LIVE NETWORK MONITOR"
+)
+
+print("=" * 70)
+
+print(
+    "Interface : Wi-Fi"
+)
+
+print(
+    "Model     : GaussianNB"
+)
+
+print(
+    "Features  : 41 KDD Features"
+)
+
+print(
+    "Detection : Flow-Based AI"
+)
+
+print(
+    "Confidence: 90% Alert Threshold"
+)
+
+print(
+    "Mode      : LIVE"
+)
+
+print(
+    "Dashboard : Connected"
+)
+
+print(
+    "Press CTRL + C to stop"
+)
+
+print("=" * 70)
+
+print()
+
+print(
+    "Starting packet capture..."
+)
+
+print()
+
+
+# =========================================================
+# PACKET CAPTURE
+# =========================================================
+
+try:
+
+    sniff(
+
+        iface=wifi_interface,
+
+        prn=packet_callback,
+
+        store=False
+
+    )
+
+except KeyboardInterrupt:
+
+    print()
+
+    print("=" * 70)
+
+    print(
+        "LIVE MONITOR STOPPED"
+    )
+
+    print("=" * 70)
+
+
+    live_data[
+        "monitoring"
+    ] = False
+
+    live_data[
+        "status"
+    ] = "stopped"
+
+    save_live_data()
+
+
+except Exception as e:
+
+    print()
+
+    print("=" * 70)
+
+    print(
+        "LIVE MONITOR ERROR"
+    )
+
+    print("=" * 70)
+
+    print(
+        e
+    )
+
+
+    live_data[
+        "monitoring"
+    ] = False
+
+    live_data[
+        "status"
+    ] = "error"
+
+    save_live_data()
