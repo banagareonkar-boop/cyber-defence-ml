@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Cyber Attack Detection</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #eef4f7;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.12);
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #008fa3;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            margin: 0;
+        }
+
+        /* =========================
+           STATISTICS
+        ========================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin: 25px 0;
+        }
+
+        .stat-card {
+            background: #f8fcfd;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #dcecef;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px;
+            color: #555;
+            font-size: 16px;
+        }
+
+        .stat-card h2 {
+            margin: 0;
+            color: #008fa3;
+            font-size: 28px;
+        }
+
+        /* =========================
+           UPLOAD SECTION
+        ========================= */
+
+        .upload-section {
+            background: #f8fafb;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #dcecef;
+            margin-top: 25px;
+        }
+
+        .upload-section h2 {
+            color: #008fa3;
+            margin-top: 0;
+        }
+
+        .upload-section p {
+            color: #555;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .detect-btn {
+            margin-top: 18px;
+            padding: 13px 28px;
+            border: none;
+            border-radius: 8px;
+            background: #008fa3;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .detect-btn:hover {
+            background: #007484;
+        }
+
+        /* =========================
+           FILE INFORMATION
+        ========================= */
+
+        .file-info {
+            margin-top: 25px;
+            padding: 15px;
+            background: #eef9fb;
+            border-left: 5px solid #008fa3;
+            border-radius: 6px;
+            color: #333;
+            word-break: break-word;
+        }
+
+        /* =========================
+           CONVERSION INFO
+        ========================= */
+
+        .conversion-info {
+            margin-top: 15px;
+            padding: 12px 15px;
+            background: #f5f5f5;
+            border-radius: 7px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        /* =========================
+           RESULTS
+        ========================= */
+
+        .result-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .result-card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        .result-card h3 {
+            color: #008fa3;
+            margin-top: 0;
+        }
+
+        .result-card p {
+            color: #333;
+            line-height: 1.8;
+            word-break: break-word;
+        }
+
+        /* =========================
+           SECURITY RESPONSE
+        ========================= */
+
+        .solution-section {
+            margin-top: 40px;
+        }
+
+        .solution-section > h2 {
+            color: #008fa3;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .solution-card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.10);
+            border-left: 6px solid #008fa3;
+        }
+
+        .solution-card h3 {
+            color: #111;
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        .solution-card p {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* =========================
+           SEVERITY
+        ========================= */
+
+        .severity {
+            font-weight: bold;
+        }
+
+        .severity-high {
+            color: #d32f2f !important;
+        }
+
+        .severity-medium {
+            color: #e65100 !important;
+        }
+
+        .severity-critical {
+            color: #8e0000 !important;
+        }
+
+        .severity-low {
+            color: #2e7d32 !important;
+        }
+
+        /* =========================
+           ACTION
+        ========================= */
+
+        .action-box {
+            background: #f4f5f6;
+            padding: 14px;
+            border-radius: 7px;
+            margin-top: 12px;
+            border: 1px solid #ddd;
+        }
+
+        .action-box strong {
+            color: #111;
+        }
+
+        /* =========================
+           SOLUTION
+        ========================= */
+
+        .solution-box {
+            background: #eaf6ff;
+            padding: 14px;
+            border-radius: 7px;
+            margin-top: 12px;
+            border: 1px solid #c5e7f5;
+        }
+
+        .solution-box strong {
+            color: #111;
+        }
+
+        /* =========================
+           CHART
+        ========================= */
+
+        .chart-section {
+            margin-top: 40px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.10);
+        }
+
+        .chart-section h2 {
+            color: #008fa3;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+        }
+
+        /* =========================
+           EMPTY RESULT
+        ========================= */
+
+        .empty-message {
+            text-align: center;
+            color: #777;
+            padding: 20px;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 900px) {
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .result-box {
+                grid-template-columns: 1fr;
+            }
+
+            .solution-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 18px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <div class="header">
+
+        <h1>
+            🛡️ Cyber Attack Detection System
+        </h1>
+
+        <p>
+            Machine Learning Based Network Security Analysis
+        </p>
+
+    </div>
+
+
+    <!-- =========================
+         STATISTICS
+    ========================== -->
+
+    <div class="stats">
+
+
+        <div class="stat-card">
+
+            <h3>
+                Total Records
+            </h3>
+
+            <h2>
+                {{ total_records }}
+            </h2>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h3>
+                Normal Traffic
+            </h3>
+
+            <h2>
+                {{ total_normal }}
+            </h2>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h3>
+                Attack Traffic
+            </h3>
+
+            <h2>
+                {{ total_attacks }}
+            </h2>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h3>
+                Attack Types
+            </h3>
+
+            <h2>
+                {{ total_attack_types }}
+            </h2>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =========================
+         FILE UPLOAD
+    ========================== -->
+
+    <div class="upload-section">
+
+
+        <h2>
+            📂 Network Dataset Analysis
+        </h2>
+
+
+        <p>
+            Upload a supported network security dataset
+            in CSV or TXT format.
+        </p>
+
+
+        <form
+            method="POST"
+            action="{{ url_for('prediction') }}"
+            enctype="multipart/form-data"
+        >
+
+
+            <label>
+                <strong>
+                    Select Dataset
+                </strong>
+            </label>
+
+
+            <input
+                type="file"
+                name="dataset_file"
+                class="file-input"
+                accept=".csv,.txt"
+                required
+            >
+
+
+            <button
+                type="submit"
+                class="detect-btn"
+            >
+                🔍 Detect Attacks
+            </button>
+
+
+        </form>
+
+
+    </div>
+
+
+    <!-- =========================
+         FILE INFORMATION
+    ========================== -->
+
+    {% if file_info %}
+
+    <div class="file-info">
+
+        {{ file_info }}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- =========================
+         CONVERSION INFORMATION
+    ========================== -->
+
+    {% if conversion_info %}
+
+    <div class="conversion-info">
+
+        <strong>
+            Feature Conversion:
+        </strong>
+
+        {{ conversion_info }}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- =========================
+         RESULTS
+    ========================== -->
+
+    {% if total_records > 0 %}
+
+
+    <div class="result-box">
+
+
+        <!-- FIRST 10 -->
+
+        <div class="result-card">
+
+            <h3>
+                🔎 First 10 Predictions
+            </h3>
+
+            <p>
+                {{ first10 | safe }}
+            </p>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+
+        <div class="result-card">
+
+            <h3>
+                📊 Attack Summary
+            </h3>
+
+            <p>
+                {{ summary | safe }}
+            </p>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =========================
+         SECURITY RESPONSE
+    ========================== -->
+
+    <div class="solution-section">
+
+
+        <h2>
+            🛡️ Attack Response & Security Solution
+        </h2>
+
+
+        {% if response_details %}
+
+
+        <div class="solution-grid">
+
+
+            {% for item in response_details %}
+
+
+            <div class="solution-card">
+
+
+                <h3>
+                    {{ item.category }}
+                </h3>
+
+
+                <!-- SEVERITY -->
+
+                {% if item.severity == "Critical" %}
+
+                <p class="severity severity-critical">
+
+                    🔴 Severity:
+                    {{ item.severity }}
+
+                </p>
+
+                {% elif item.severity == "High" %}
+
+                <p class="severity severity-high">
+
+                    🟠 Severity:
+                    {{ item.severity }}
+
+                </p>
+
+                {% elif item.severity == "Medium" %}
+
+                <p class="severity severity-medium">
+
+                    🟡 Severity:
+                    {{ item.severity }}
+
+                </p>
+
+                {% else %}
+
+                <p class="severity severity-low">
+
+                    🟢 Severity:
+                    {{ item.severity }}
+
+                </p>
+
+                {% endif %}
+
+
+                <!-- COUNT -->
+
+                <p>
+
+                    <strong>
+                        Detected Records:
+                    </strong>
+
+                    {{ item.count }}
+
+                </p>
+
+
+                <!-- ACTION -->
+
+                <div class="action-box">
+
+                    <strong>
+                        Recommended Action
+                    </strong>
+
+                    <p>
+                        {{ item.action }}
+                    </p>
+
+                </div>
+
+
+                <!-- SOLUTION -->
+
+                <div class="solution-box">
+
+                    <strong>
+                        Security Solution
+                    </strong>
+
+                    <p>
+                        {{ item.solution }}
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+            {% endfor %}
+
+
+        </div>
+
+
+        {% else %}
+
+        <div class="result-card">
+
+            <p>
+                No attack-specific security response
+                is available for the detected result.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+
+    </div>
+
+
+    <!-- =========================
+         ATTACK DISTRIBUTION CHART
+    ========================== -->
+
+    <div class="chart-section">
+
+
+        <h2>
+            📊 Attack Distribution
+        </h2>
+
+
+        <div class="chart-container">
+
+            <canvas id="attackChart"></canvas>
+
+        </div>
+
+
+    </div>
+
+
+    {% else %}
+
+
+    <!-- =========================
+         BEFORE UPLOAD
+    ========================== -->
+
+    <div class="result-card"
+         style="margin-top:30px;">
+
+        <p class="empty-message">
+
+            📂 Upload a network dataset to start
+            cyber attack detection.
+
+        </p>
+
+    </div>
+
+
+    {% endif %}
+
+
+</div>
+
+
+<!-- =========================
+     CHART SCRIPT
+========================== -->
+
+<script>
+
+
+const labels = {{ labels | tojson }};
+
+const values = {{ values | tojson }};
+
+
+if (
+    labels.length > 0 &&
+    values.length > 0
+) {
+
+    const canvas =
+        document.getElementById(
+            "attackChart"
+        );
+
+
+    if (canvas) {
+
+        const ctx =
+            canvas.getContext("2d");
+
+
+        new Chart(
+            ctx,
+            {
+
+                type: "bar",
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "Detected Records",
+
+                            data:
+                                values,
+
+                            backgroundColor:
+                                "rgba(0, 188, 212, 0.65)",
+
+                            borderColor:
+                                "rgba(0, 150, 170, 1)",
+
+                            borderWidth: 1
+
+                        }
+
+                    ]
+
+                },
+
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: {
+
+                            display: true
+
+                        }
+
+                    },
+
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            title: {
+
+                                display: true,
+
+                                text:
+                                    "Number of Records"
+
+                            }
+
+                        },
+
+
+                        x: {
+
+                            title: {
+
+                                display: true,
+
+                                text:
+                                    "Attack Category"
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+    }
+
+}
+
+</script>
+
+
+</body>
+
+</html>
